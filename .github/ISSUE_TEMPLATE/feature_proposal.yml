@@ -1,0 +1,14 @@
+name: Feature implementation proposal
+description: Propose a possible solution to solve an addon limitation
+body:
+
+- type: markdown
+  attributes:
+    value: |
+      - Write a descriptive proposal title above.
+
+- type: textarea
+  attributes:
+    label: Describe how your proposal will work, with code, pseudo-code, mock-ups, and/or diagrams
+  validations:
+    required: true
