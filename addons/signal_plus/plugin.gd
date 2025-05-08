@@ -78,7 +78,7 @@ func _input(event: InputEvent) -> void:
 				
 				base_editor.add_code_completion_option(
 					CodeEdit.KIND_PLAIN_TEXT,
-					method_text,
+					method_text.replace("pass", ""),
 					GDScriptParser.callable_name,
 					Color.WHITE,
 					method_icon
