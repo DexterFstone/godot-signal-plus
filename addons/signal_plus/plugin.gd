@@ -65,6 +65,7 @@ func _input(event: InputEvent) -> void:
 	if Input.is_key_pressed(KEY_CTRL):
 		if Input.is_key_pressed(KEY_ALT):
 			if event.is_released() and event.keycode == KEY_SPACE:
+				GDScriptParser.init(indent_type, indent_size)
 				var caret_line: int = base_editor.get_caret_line()
 				var current_line: String = base_editor.get_line(caret_line)
 				if GDScriptParser.is_comment(base_editor, caret_line):
