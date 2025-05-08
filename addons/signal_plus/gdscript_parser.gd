@@ -1,5 +1,8 @@
 extends RefCounted
 
+static var indent_type: int = 0
+static var indent_size: int = 4
+
 static var line_column: int
 static var split_line: PackedStringArray
 static var split_size: int 
@@ -11,9 +14,23 @@ static var inset_args_text: String
 static var callable_name: String
 static var inset_func_text: String
 
+static func init(type: int, size: int) -> void:
+	indent_type = type
+	indent_size = size
+
+static func indent_is_tab() -> bool:
+	return indent_type == 0
+
+static func indent_is_space() -> bool:
+	return indent_type == 1
+
 static func parse_line(line: String) -> bool:
 	line_column = line.length() - 1
-	split_line = line.strip_escapes().split(".")
+	if indent_is_tab():
+		split_line = line.strip_escapes().split(".")
+	elif indent_is_space():
+		split_line = line.lstrip(" ").split(".")
+	
 	split_size = split_line.size()
 	if split_size <= 1:
 		return false
@@ -155,27 +172,53 @@ static func find_signal_args(script_editor: ScriptEditor) -> void:
 	inset_args_text = inset_args_text.substr(0, from)
 
 static func get_lambda_text(current_line: String) -> String:
-	var tabs: int = current_line.count("\t")
-	var text: String = "func (%s):\n%spass\n%s" % [
-		inset_args_text,
-		"\t".repeat(tabs + 1),
-		"\t".repeat(tabs)
-	]
-	return text
+	if indent_is_tab():
+		var tabs: int = current_line.count("\t")
+		var text: String = "func (%s):\n%spass\n%s" % [
+			inset_args_text,
+			"\t".repeat(tabs + 1),
+			"\t".repeat(tabs)
+		]
+		return text
+	elif indent_is_space():
+		var spaces: int = current_line.count(" ")
+		var text: String = "func (%s):\n%spass\n%s" % [
+			inset_args_text,
+			" ".repeat(spaces + indent_size),
+			" ".repeat(spaces)
+		]
+		return text
+	return ""
 
 static func get_method_text(current_line: String) -> String:
-	var tabs: int = current_line.count("\t")
-	if is_self() or split_size == 2:
-		callable_name = "_on_%s" % signal_name
-	else :
-		callable_name = "_on_%s_%s" % [object_name, signal_name]
-	var text: String = "\nfunc %s(%s) -> void:\n%spass" % [
-		callable_name,
-		inset_args_text,
-		"\t".repeat(tabs + 1)
-	]
-	inset_func_text = text
-	return text
+	if indent_is_tab():
+		var tabs: int = current_line.count("\t")
+		if is_self() or split_size == 2:
+			callable_name = "_on_%s" % signal_name
+		else :
+			callable_name = "_on_%s_%s" % [object_name, signal_name]
+		var text: String = "\nfunc %s(%s) -> void:\n%spass" % [
+			callable_name,
+			inset_args_text,
+			"\t".repeat(tabs)
+		]
+		inset_func_text = text
+		return text
+	elif indent_is_space():
+		var spaces: int = current_line.count(" ")
+		if is_self() or split_size == 2:
+			callable_name = "_on_%s" % signal_name
+		else :
+			callable_name = "_on_%s_%s" % [object_name, signal_name]
+		var text: String = "\nfunc %s(%s) -> void:\n%spass" % [
+			callable_name,
+			inset_args_text,
+			" ".repeat(spaces)
+		]
+		inset_func_text = text
+		return text
+	
+	return ""
 
 static func clear() -> void:
 	line_column = 0
