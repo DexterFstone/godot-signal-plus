@@ -127,6 +127,9 @@ func _on_lines_edited_from(from_line: int, to_line: int) -> void:
 	var line_count: int = base_editor.get_line_count() - 1
 	script_editor.goto_line.call_deferred(line_count)
 	base_editor.insert_line_at.call_deferred(line_count, GDScriptParser.inset_func_text)
+	GDScriptParser.signal_name = ""
+	GDScriptParser.callable_name = ""
+	GDScriptParser.inset_func_text = ""
 
 func _on_focus_exited() -> void:
 	base_editor.cancel_code_completion()
