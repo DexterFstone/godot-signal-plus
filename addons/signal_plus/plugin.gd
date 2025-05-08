@@ -5,9 +5,12 @@ const GDScriptParser = preload("res://addons/signal_plus/gdscript_parser.gd")
 
 var main_screen_name: String
 
+var editor_settings: EditorSettings
 var script_editor: ScriptEditor
 var script_editor_base: ScriptEditorBase
 var base_editor: CodeEdit
+var indent_type: int = 0
+var indent_size: int = 4
 
 @onready var method_icon: Resource = (
 		get_editor_interface().get_editor_theme().get_icon("MethodOverride", "EditorIcons")
@@ -21,6 +24,11 @@ func _enter_tree() -> void:
 	main_screen_changed.connect(_on_main_screen_changed)
 	get_editor_interface().set_main_screen_editor("2D")
 	get_editor_interface().set_main_screen_editor("Script")
+	editor_settings = get_editor_interface().get_editor_settings()
+	if not editor_settings.settings_changed.is_connected(_on_editor_settings_settings_changed):
+		editor_settings.settings_changed.connect(_on_editor_settings_settings_changed)
+	indent_type = editor_settings.get_setting("text_editor/behavior/indent/type")
+	indent_size = editor_settings.get_setting("text_editor/behavior/indent/size")
 	script_editor = get_editor_interface().get_script_editor()
 	if not script_editor.editor_script_changed.is_connected(_on_editor_script_changed):
 		script_editor.editor_script_changed.connect(_on_editor_script_changed)
@@ -28,6 +36,10 @@ func _enter_tree() -> void:
 	_on_editor_script_changed.call_deferred(null)
 
 func _exit_tree() -> void:
+	if editor_settings.settings_changed.is_connected(_on_editor_settings_settings_changed):
+		editor_settings.settings_changed.disconnect(_on_editor_settings_settings_changed)
+	
+	editor_settings = null
 	if script_editor.editor_script_changed.is_connected(_on_editor_script_changed):
 		script_editor.editor_script_changed.disconnect(_on_editor_script_changed)
 	
@@ -96,6 +108,10 @@ func _input(event: InputEvent) -> void:
 
 func _on_main_screen_changed(screen_name: String) -> void:
 	main_screen_name = screen_name
+
+func _on_editor_settings_settings_changed() -> void:
+	indent_type = editor_settings.get_setting("text_editor/behavior/indent/type")
+	indent_size = editor_settings.get_setting("text_editor/behavior/indent/size")
 
 func _on_editor_script_changed(script: Script) -> void:
 	script_editor_base = script_editor.get_current_editor()
